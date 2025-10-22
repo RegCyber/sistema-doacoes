@@ -30,49 +30,60 @@ st.set_page_config(
 )
 
 # CSS personalizado
+#st.markdown("""
+# <style>
+#     .main-header {
+#         font-size: 3rem;
+#         color: #1f77b4;
+#         text-align: center;
+#         margin-bottom: 2rem;
+#     }
+#     .metric-card {
+#         background-color: #f0f2f6;
+#         padding: 1rem;
+#         border-radius: 10px;
+#         text-align: center;
+#         margin: 0.5rem;
+#     }
+#     .success-msg {
+#         background-color: #d4edda;
+#         color: #155724;
+#         padding: 1rem;
+#         border-radius: 5px;
+#         margin: 1rem 0;
+#     }
+#     .pet-card {
+#         border: 1px solid #ddd;
+#         border-radius: 10px;
+#         padding: 1rem;
+#         margin: 1rem 0;
+#         background-color: white;
+#     }
+#     .item-card {
+#         border: 1px solid #e0e0e0;
+#         border-radius: 8px;
+#         padding: 1rem;
+#         margin: 0.5rem 0;
+#         background-color: #fafafa;
+#     }
+#     .login-container {
+#         max-width: 400px;
+#         margin: 0 auto;
+#         padding: 2rem;
+#         border: 1px solid #ddd;
+#         border-radius: 10px;
+#         background-color: white;
+#     }
+# </style>
+#""", unsafe_allow_html=True)
+
+# SUBSTITUA por este CSS mais simples:
 st.markdown("""
 <style>
     .main-header {
-        font-size: 3rem;
+        font-size: 2.5rem;
         color: #1f77b4;
         text-align: center;
-        margin-bottom: 2rem;
-    }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 10px;
-        text-align: center;
-        margin: 0.5rem;
-    }
-    .success-msg {
-        background-color: #d4edda;
-        color: #155724;
-        padding: 1rem;
-        border-radius: 5px;
-        margin: 1rem 0;
-    }
-    .pet-card {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 1rem 0;
-        background-color: white;
-    }
-    .item-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        background-color: #fafafa;
-    }
-    .login-container {
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 2rem;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        background-color: white;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -230,33 +241,23 @@ else:
             total_pets = session.query(Pet).count()
             st.metric("🐾 Pets", total_pets)
 
-    # Cadastrar Doação - VERSÃO CORRIGIDA
+    # Cadastrar Doação - VERSÃO SIMPLIFICADA
     elif pagina == "🎁 Cadastrar Doação" and st.session_state.usuario_logado:
         st.title("🎁 Cadastrar Doação")
         
-        # Controles para adicionar/remover itens (FORA do formulário)
-        st.subheader("🎁 Itens para Doação")
+        # Controle simplificado de itens
+        if 'num_itens' not in st.session_state:
+            st.session_state.num_itens = 1
         
         col1, col2 = st.columns([3, 1])
         with col1:
-            st.write("Adicione um ou mais itens que deseja doar:")
+            st.write("Quantos itens deseja cadastrar?")
         with col2:
-            if st.button("➕ Adicionar Novo Item"):
-                st.session_state.itens.append({'item': '', 'quantidade': 1, 'descricao': '', 'foto_url': ''})
+            num_itens = st.number_input("Nº de itens", min_value=1, max_value=10, 
+                                      value=st.session_state.num_itens, key="num_itens_input")
+            if num_itens != st.session_state.num_itens:
+                st.session_state.num_itens = num_itens
                 st.rerun()
-        
-        # Resumo dos itens antes do formulário
-        if len(st.session_state.itens) > 0:
-            itens_validos = [item for item in st.session_state.itens if item['item']]
-            if itens_validos:
-                st.subheader("📋 Resumo dos Itens")
-                total_itens = sum(item['quantidade'] for item in itens_validos)
-                st.write(f"**Total de itens diferentes:** {len(itens_validos)}")
-                st.write(f"**Quantidade total:** {total_itens}")
-                
-                # Lista resumida
-                for i, item_data in enumerate(itens_validos):
-                    st.write(f"• {item_data['quantidade']}x {item_data['item']}")
         
         with st.form("form_doador"):
             st.subheader("📋 Dados Pessoais do Doador")
@@ -287,74 +288,45 @@ else:
             st.subheader("⏰ Disponibilidade")
             prazo_disponibilidade = st.date_input("Prazo de Disponibilidade*", min_value=datetime.today())
             
-            # Mostrar itens atuais no formulário
-            itens_para_remover = []
+            st.subheader("🎁 Itens para Doação")
             
-            for i, item_data in enumerate(st.session_state.itens):
-                with st.expander(f"Item {i+1}", expanded=True):
-                    col1, col2 = st.columns([3, 1])
-                    
-                    with col1:
-                        item = st.text_input(
-                            f"Item*",
-                            value=item_data['item'],
-                            placeholder="Ex: Arroz, Roupas, Colchão, Medicamentos...",
-                            key=f"item_{i}"
-                        )
-                        
-                        col_qtd, col_desc = st.columns(2)
-                        with col_qtd:
-                            quantidade = st.number_input(
-                                f"Quantidade*",
-                                min_value=1,
-                                value=item_data['quantidade'],
-                                key=f"qtd_{i}"
-                            )
-                        with col_desc:
-                            descricao = st.text_area(
-                                f"Descrição",
-                                value=item_data['descricao'],
-                                placeholder="Detalhes, marca, estado do item...",
-                                height=80,
-                                key=f"desc_{i}"
-                            )
-                        
-                        foto_url = st.text_input(
-                            f"URL da Foto (opcional)",
-                            value=item_data['foto_url'],
-                            placeholder="https://exemplo.com/foto-item.jpg",
-                            key=f"foto_{i}"
-                        )
-                    
-                    with col2:
-                        st.write("")  # Espaçamento
-                        st.write("")  # Espaçamento
-                        if len(st.session_state.itens) > 1:
-                            # Usar checkbox para remover (dentro do form é permitido)
-                            if st.checkbox("Remover", key=f"remove_{i}"):
-                                itens_para_remover.append(i)
-                    
-                    # Atualiza os dados do item
-                    st.session_state.itens[i] = {
-                        'item': item,
-                        'quantidade': quantidade,
-                        'descricao': descricao,
-                        'foto_url': foto_url
-                    }
+            itens_data = []
+            for i in range(st.session_state.num_itens):
+                st.write(f"**Item {i+1}**")
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    item = st.text_input(f"Item*", key=f"item_{i}", 
+                                       placeholder="Ex: Arroz, Roupas, Colchão, Medicamentos...")
+                with col2:
+                    quantidade = st.number_input(f"Quantidade*", min_value=1, value=1, key=f"qtd_{i}")
+                
+                descricao = st.text_area(f"Descrição", key=f"desc_{i}", 
+                                       placeholder="Detalhes, marca, estado do item...",
+                                       height=60)
+                foto_url = st.text_input(f"URL da Foto (opcional)", key=f"foto_{i}",
+                                       placeholder="https://exemplo.com/foto-item.jpg")
+                
+                itens_data.append({
+                    'item': item,
+                    'quantidade': quantidade,
+                    'descricao': descricao,
+                    'foto_url': foto_url
+                })
+                
+                if i < st.session_state.num_itens - 1:
+                    st.divider()
             
             # Botão de submit do formulário
             submitted = st.form_submit_button("📝 Cadastrar Doação")
             
             if submitted:
-                # Remove itens marcados para remoção (de trás para frente)
-                for i in sorted(itens_para_remover, reverse=True):
-                    st.session_state.itens.pop(i)
-                
                 # Validações
-                campos_pessoais_ok = all([cpf, nome, telefone, whatsapp, pode_entregar, cep, endereco, numero, bairro, cidade, estado])
+                campos_pessoais_ok = all([cpf, nome, telefone, whatsapp, pode_entregar, 
+                                        cep, endereco, numero, bairro, cidade, estado])
                 
                 # Verifica se há pelo menos 1 item preenchido
-                itens_validos = [item for item in st.session_state.itens if item['item']]
+                itens_validos = [item for item in itens_data if item['item'].strip()]
                 if not itens_validos:
                     st.error("⚠️ Adicione pelo menos um item para doação!")
                     campos_pessoais_ok = False
@@ -389,8 +361,8 @@ else:
                                 doador_id=novo_doador.id,
                                 item=item_data['item'],
                                 quantidade=item_data['quantidade'],
-                                descricao=item_data['descricao'] if item_data['descricao'] else None,
-                                foto_url=item_data['foto_url'] if item_data['foto_url'] else None
+                                descricao=item_data['descricao'].strip() if item_data['descricao'].strip() else None,
+                                foto_url=item_data['foto_url'].strip() if item_data['foto_url'].strip() else None
                             )
                             session.add(novo_item)
                         
@@ -407,9 +379,6 @@ else:
                         - **Quantidade total:** {sum(item['quantidade'] for item in itens_validos)}
                         - **Disponível até:** {prazo_disponibilidade.strftime('%d/%m/%Y')}
                         """)
-                        
-                        # Limpa o formulário
-                        st.session_state.itens = [{'item': '', 'quantidade': 1, 'descricao': '', 'foto_url': ''}]
                         
                     except Exception as e:
                         session.rollback()
