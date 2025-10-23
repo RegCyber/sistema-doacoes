@@ -4,21 +4,77 @@ from datetime import datetime
 from database import get_session, Doador, Receptor, Pet, ItemDoacao, Usuario
 from database import hash_senha, gerar_salt, verificar_senha
 
-# Configuração mínima da página
+# Configuração da página
 st.set_page_config(
     page_title="Sistema de Doações para Enchentes",
     page_icon="🤝",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# CSS mínimo e seguro
+# CSS personalizado
 st.markdown("""
 <style>
     .main-header {
-        font-size: 2rem;
+        font-size: 2.5rem;
         color: #1f77b4;
         text-align: center;
-        margin-bottom: 1rem;
+        margin-bottom: 2rem;
+        font-weight: bold;
+    }
+    .metric-card {
+        background-color: #f0f2f6;
+        padding: 1.5rem;
+        border-radius: 10px;
+        text-align: center;
+        margin: 0.5rem;
+        border: 1px solid #e0e0e0;
+    }
+    .success-msg {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        border-left: 4px solid #28a745;
+    }
+    .error-msg {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        border-left: 4px solid #dc3545;
+    }
+    .info-msg {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        border-left: 4px solid #17a2b8;
+    }
+    .form-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        border: 1px solid #e0e0e0;
+    }
+    .stButton button {
+        background-color: #1f77b4;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+    .stButton button:hover {
+        background-color: #1668a1;
+    }
+    /* Garantir que a página sempre comece no topo */
+    html {
+        scroll-behavior: smooth;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -31,6 +87,12 @@ def inicializar_sessao():
         st.session_state.is_admin = False
     if 'user_id' not in st.session_state:
         st.session_state.user_id = None
+    if 'num_itens_doacao' not in st.session_state:
+        st.session_state.num_itens_doacao = 1
+    if 'pagina_atual' not in st.session_state:
+        st.session_state.pagina_atual = "Início"
+    if 'scroll_position' not in st.session_state:
+        st.session_state.scroll_position = 0
 
 def fazer_login(login, senha):
     session = get_session()
@@ -49,6 +111,8 @@ def fazer_logout():
     st.session_state.usuario_logado = None
     st.session_state.is_admin = False
     st.session_state.user_id = None
+    st.session_state.num_itens_doacao = 1
+    st.session_state.pagina_atual = "Início"
 
 def cadastrar_usuario(login, email, whatsapp, senha):
     session = get_session()
@@ -85,7 +149,7 @@ def cadastrar_usuario(login, email, whatsapp, senha):
 # Inicializar sessão
 inicializar_sessao()
 
-# Sidebar simplificada
+# Sidebar
 st.sidebar.title("Navegação")
 
 if st.session_state.usuario_logado:
@@ -96,57 +160,83 @@ if st.session_state.usuario_logado:
         fazer_logout()
         st.rerun()
 else:
-    # Menu de login/cadastro na sidebar
     opcao_login = st.sidebar.radio("Acesso:", ["Entrar", "Cadastrar"])
     
     if opcao_login == "Entrar":
-        with st.sidebar.form("login_form"):
+        with st.sidebar:
             st.subheader("Login")
             login = st.text_input("Usuário")
             senha = st.text_input("Senha", type="password")
-            if st.form_submit_button("Entrar"):
+            if st.button("Entrar"):
                 if fazer_login(login, senha):
-                    st.sidebar.success("Login realizado!")
+                    st.success("Login realizado!")
                     st.rerun()
                 else:
-                    st.sidebar.error("Usuário ou senha inválidos")
+                    st.error("Usuário ou senha inválidos")
     
-    else:  # Cadastro
-        with st.sidebar.form("cadastro_form"):
+    else:
+        with st.sidebar:
             st.subheader("Cadastro")
-            login = st.text_input("Nome de usuário*")
+            login = st.text_input("Nome de usuário")
             email = st.text_input("E-mail")
             whatsapp = st.text_input("WhatsApp")
-            senha = st.text_input("Senha (mínimo 6 caracteres)*", type="password")
-            if st.form_submit_button("Cadastrar"):
+            senha = st.text_input("Senha", type="password")
+            if st.button("Cadastrar"):
                 sucesso, mensagem = cadastrar_usuario(login, email, whatsapp, senha)
                 if sucesso:
-                    st.sidebar.success(mensagem)
+                    st.success(mensagem)
                 else:
-                    st.sidebar.error(mensagem)
+                    st.error(mensagem)
+
+# JavaScript para rolar para o topo quando mudar de página
+st.markdown("""
+<script>
+    // Função para rolar para o topo
+    function scrollToTop() {
+        window.scrollTo(0, 0);
+    }
+    
+    // Executar quando a página carregar
+    window.addEventListener('load', function() {
+        scrollToTop();
+    });
+</script>
+""", unsafe_allow_html=True)
+
+# Controle de navegação
+if st.session_state.usuario_logado:
+    paginas = ["Início", "Cadastrar Doação", "Solicitar Ajuda", "Pets Perdidos", "Visualizar Cadastros"]
+    if st.session_state.is_admin:
+        paginas.append("Administração")
+else:
+    paginas = ["Início", "Visualizar Cadastros"]
+    st.sidebar.warning("Faça login para cadastrar doações")
+
+# Seleção de página com controle de estado
+pagina_selecionada = st.sidebar.selectbox("Selecione a página:", paginas, index=0)
+
+# Verificar se a página mudou
+if pagina_selecionada != st.session_state.pagina_atual:
+    st.session_state.pagina_atual = pagina_selecionada
+    # Forçar rolagem para o topo
+    st.markdown("""
+    <script>
+        window.scrollTo(0, 0);
+    </script>
+    """, unsafe_allow_html=True)
+    st.rerun()
 
 # Páginas principais
-if not st.session_state.usuario_logado and 'opcao_login' in locals() and opcao_login == "Entrar":
+if not st.session_state.usuario_logado:
     st.title("Sistema de Doações para Enchentes")
     st.info("Faça login na sidebar para acessar o sistema completo.")
     
 else:
-    # Menu principal
-    if st.session_state.usuario_logado:
-        paginas = ["Início", "Cadastrar Doação", "Solicitar Ajuda", "Pets Perdidos", "Visualizar Cadastros"]
-        if st.session_state.is_admin:
-            paginas.append("Administração")
-    else:
-        paginas = ["Início", "Visualizar Cadastros"]
-        st.sidebar.warning("Faça login para cadastrar doações")
-    
-    pagina = st.sidebar.selectbox("Selecione a página:", paginas)
-
     # Sessão do banco
     session = get_session()
 
-    # Página Início
-    if pagina == "Início":
+    # Página Inicial
+    if st.session_state.pagina_atual == "Início":
         st.markdown('<h1 class="main-header">Solidariedade em Tempos de Enchente</h1>', unsafe_allow_html=True)
         
         st.write("""
@@ -175,8 +265,8 @@ else:
             total_pets = session.query(Pet).count()
             st.metric("Pets", total_pets)
 
-    # Cadastrar Doação - VERSÃO SIMPLIFICADA
-    elif pagina == "Cadastrar Doação" and st.session_state.usuario_logado:
+    # Cadastrar Doação
+    elif st.session_state.pagina_atual == "Cadastrar Doação":
         st.title("Cadastrar Doação")
         
         with st.form("form_doador"):
@@ -206,7 +296,7 @@ else:
                 estado = st.text_input("Estado*", placeholder="SP", max_chars=2)
             
             st.subheader("Itens para Doação")
-            num_itens = st.number_input("Quantos itens deseja cadastrar?", min_value=1, max_value=5, value=1)
+            num_itens = st.number_input("Quantos itens deseja cadastrar?", min_value=1, max_value=5, value=st.session_state.num_itens_doacao)
             
             itens_data = []
             for i in range(num_itens):
@@ -228,9 +318,6 @@ else:
                     'quantidade': quantidade,
                     'descricao': descricao
                 })
-                
-                if i < num_itens - 1:
-                    st.divider()
             
             st.subheader("Disponibilidade")
             prazo_disponibilidade = st.date_input("Prazo de Disponibilidade*", min_value=datetime.today())
@@ -253,8 +340,8 @@ else:
                         # VERIFICAR SE CPF JÁ EXISTE
                         doador_existente = session.query(Doador).filter(Doador.cpf == cpf).first()
                         if doador_existente:
-                            st.error("Ja existe um doador cadastrado com este CPF!")
-                            st.info(f"CPF {cpf} ja pertence a: {doador_existente.nome}")
+                            st.error("Já existe um doador cadastrado com este CPF!")
+                            st.info(f"CPF {cpf} já pertence a: {doador_existente.nome}")
                         else:
                             # Obter usuário logado
                             usuario_id = st.session_state.user_id
@@ -290,7 +377,7 @@ else:
                             
                             session.commit()
                             
-                            st.success("Doacao cadastrada com sucesso!")
+                            st.success("Doação cadastrada com sucesso!")
                             
                             # Mostra resumo final
                             st.info(f"""
@@ -298,17 +385,17 @@ else:
                             - **Doador:** {nome}
                             - **Itens cadastrados:** {len(itens_validos)}
                             - **Quantidade total:** {sum(item['quantidade'] for item in itens_validos)}
-                            - **Disponivel ate:** {prazo_disponibilidade.strftime('%d/%m/%Y')}
+                            - **Disponível até:** {prazo_disponibilidade.strftime('%d/%m/%Y')}
                             """)
                             
                     except Exception as e:
                         session.rollback()
-                        st.error(f"Erro ao cadastrar doacao: {e}")
+                        st.error(f"Erro ao cadastrar doação: {e}")
                 else:
-                    st.error("Preencha todos os campos obrigatorios!")
+                    st.error("Preencha todos os campos obrigatórios!")
 
-    # Solicitar Ajuda - VERSÃO SIMPLIFICADA
-    elif pagina == "Solicitar Ajuda" and st.session_state.usuario_logado:
+    # Solicitar Ajuda
+    elif st.session_state.pagina_atual == "Solicitar Ajuda":
         st.title("Solicitar Ajuda")
         
         with st.form("form_receptor"):
@@ -325,13 +412,13 @@ else:
                 qtde_pessoas = st.number_input("Quantidade de Pessoas*", min_value=1, value=1)
                 pode_retirar = st.selectbox("Pode retirar os itens?*", ["", "Sim", "Não"])
             
-            st.subheader("Endereco para Entrega")
+            st.subheader("Endereço para Entrega")
             col1, col2 = st.columns(2)
             
             with col1:
                 cep = st.text_input("CEP*", placeholder="00000-000")
-                endereco = st.text_input("Endereco*")
-                numero = st.text_input("Numero*")
+                endereco = st.text_input("Endereço*")
+                numero = st.text_input("Número*")
             
             with col2:
                 bairro = st.text_input("Bairro*")
@@ -345,11 +432,11 @@ else:
                 
                 if campos_ok:
                     try:
-                        # VERIFICAR SE CPF JA EXISTE
+                        # VERIFICAR SE CPF JÁ EXISTE
                         receptor_existente = session.query(Receptor).filter(Receptor.cpf == cpf).first()
                         if receptor_existente:
-                            st.error("Ja existe uma solicitacao cadastrada com este CPF!")
-                            st.info(f"CPF {cpf} ja pertence a: {receptor_existente.nome}")
+                            st.error("Já existe uma solicitação cadastrada com este CPF!")
+                            st.info(f"CPF {cpf} já pertence a: {receptor_existente.nome}")
                         else:
                             usuario_id = st.session_state.user_id
                             
@@ -372,27 +459,27 @@ else:
                             session.add(novo_receptor)
                             session.commit()
                             
-                            st.success("Solicitacao de ajuda cadastrada com sucesso!")
+                            st.success("Solicitação de ajuda cadastrada com sucesso!")
                             
                             st.info(f"""
                             **Resumo do cadastro:**
                             - **Solicitante:** {nome}
-                            - **Pessoas na familia:** {qtde_pessoas}
+                            - **Pessoas na família:** {qtde_pessoas}
                             - **Pode retirar:** {pode_retirar}
                             - **Entregar em:** {endereco}, {numero} - {bairro}, {cidade}-{estado}
                             """)
                             
                     except Exception as e:
                         session.rollback()
-                        st.error(f"Erro ao cadastrar solicitacao: {e}")
+                        st.error(f"Erro ao cadastrar solicitação: {e}")
                 else:
-                    st.error("Preencha todos os campos obrigatorios!")
+                    st.error("Preencha todos os campos obrigatórios!")
 
-    # Pets Perdidos - VERSÃO SIMPLIFICADA
-    elif pagina == "Pets Perdidos" and st.session_state.usuario_logado:
+    # Pets Perdidos
+    elif st.session_state.pagina_atual == "Pets Perdidos":
         st.title("Pets Perdidos/Encontrados")
         
-        tab1, tab2 = st.tabs(["Cadastrar Pet", "Ver Pets Cadastrados"])
+        tab1, tab2 = st.tabs(["Cadastrar Pet", "Ver Pets"])
         
         with tab1:
             with st.form("form_pet"):
@@ -401,16 +488,16 @@ else:
                 
                 with col1:
                     nome = st.text_input("Nome do Pet", placeholder="Opcional")
-                    especie = st.selectbox("Especie*", ["", "Cachorro", "Gato", "Ave", "Outro"])
-                    raca = st.text_input("Raca", placeholder="Opcional")
+                    especie = st.selectbox("Espécie*", ["", "Cachorro", "Gato", "Ave", "Outro"])
+                    raca = st.text_input("Raça", placeholder="Opcional")
                 
                 with col2:
-                    situacao = st.selectbox("Situacao*", ["", "Perdido", "Encontrado", "Para Adocao"])
+                    situacao = st.selectbox("Situação*", ["", "Perdido", "Encontrado", "Para Adoção"])
                     local_encontro = st.text_input("Local onde foi encontrado/perdido*")
-                    contato = st.text_input("Contato para informacoes*", placeholder="Telefone/WhatsApp")
+                    contato = st.text_input("Contato para informações*", placeholder="Telefone/WhatsApp")
                 
-                descricao = st.text_area("Descricao do Pet*", 
-                                       placeholder="Cor, tamanho, caracteristicas especiais...")
+                descricao = st.text_area("Descrição do Pet*", 
+                                       placeholder="Cor, tamanho, características especiais...")
                 
                 submitted = st.form_submit_button("Cadastrar Pet")
                 
@@ -441,7 +528,7 @@ else:
                             session.rollback()
                             st.error(f"Erro ao cadastrar pet: {e}")
                     else:
-                        st.error("Preencha todos os campos obrigatorios!")
+                        st.error("Preencha todos os campos obrigatórios!")
         
         with tab2:
             st.subheader("Pets Cadastrados")
@@ -451,27 +538,26 @@ else:
                 st.info("Nenhum pet cadastrado ainda.")
             else:
                 for pet in pets:
-                    with st.container():
-                        st.write(f"**{pet.nome if pet.nome else 'Sem nome'}**")
-                        st.write(f"**Especie:** {pet.especie} | **Raca:** {pet.raca if pet.raca else 'Nao informada'}")
-                        st.write(f"**Situacao:** {pet.situacao} | **Local:** {pet.local_encontro}")
-                        st.write(f"**Descricao:** {pet.descricao}")
-                        st.write(f"**Contato:** {pet.contato}")
-                        st.write(f"**Cadastrado em:** {pet.data_cadastro.strftime('%d/%m/%Y %H:%M')}")
-                        st.divider()
+                    st.write(f"**{pet.nome if pet.nome else 'Sem nome'}**")
+                    st.write(f"**Espécie:** {pet.especie} | **Raça:** {pet.raca if pet.raca else 'Não informada'}")
+                    st.write(f"**Situação:** {pet.situacao} | **Local:** {pet.local_encontro}")
+                    st.write(f"**Descrição:** {pet.descricao}")
+                    st.write(f"**Contato:** {pet.contato}")
+                    st.write(f"**Cadastrado em:** {pet.data_cadastro.strftime('%d/%m/%Y %H:%M')}")
+                    st.divider()
 
     # Visualizar Cadastros
-    elif pagina == "Visualizar Cadastros":
+    elif st.session_state.pagina_atual == "Visualizar Cadastros":
         st.title("Visualizar Cadastros")
         
-        tab1, tab2, tab3 = st.tabs(["Doacoes", "Solicitacoes", "Pets"])
+        tab1, tab2, tab3 = st.tabs(["Doações", "Solicitações", "Pets"])
         
         with tab1:
-            st.subheader("Doacoes Cadastradas")
+            st.subheader("Doações Cadastradas")
             doadores = session.query(Doador).all()
             
             if not doadores:
-                st.info("Nenhuma doacao cadastrada ainda.")
+                st.info("Nenhuma doação cadastrada ainda.")
             else:
                 for doador in doadores:
                     with st.expander(f"{doador.nome} - {doador.cidade}/{doador.estado}", expanded=False):
@@ -481,27 +567,26 @@ else:
                             st.write(f"**CPF:** {doador.cpf}")
                             st.write(f"**Telefone:** {doador.telefone}")
                             st.write(f"**WhatsApp:** {doador.whatsapp}")
-                            st.write(f"**Pode entregar:** {'Sim' if doador.pode_entregar else 'Nao'}")
-                            st.write(f"**Disponivel ate:** {doador.prazo_disponibilidade.strftime('%d/%m/%Y')}")
+                            st.write(f"**Pode entregar:** {'Sim' if doador.pode_entregar else 'Não'}")
+                            st.write(f"**Disponível até:** {doador.prazo_disponibilidade.strftime('%d/%m/%Y')}")
                         
                         with col2:
-                            st.write(f"**Endereco:** {doador.endereco}, {doador.numero}")
+                            st.write(f"**Endereço:** {doador.endereco}, {doador.numero}")
                             st.write(f"**Bairro:** {doador.bairro}")
                             st.write(f"**Cidade/Estado:** {doador.cidade}/{doador.estado}")
                         
-                        # Itens doados
                         if doador.itens:
-                            st.write("**Itens para doacao:**")
+                            st.write("**Itens para doação:**")
                             for item in doador.itens:
                                 st.write(f"• {item.quantidade}x {item.item}" + 
                                        (f" - {item.descricao}" if item.descricao else ""))
         
         with tab2:
-            st.subheader("Solicitacoes de Ajuda")
+            st.subheader("Solicitações de Ajuda")
             receptores = session.query(Receptor).all()
             
             if not receptores:
-                st.info("Nenhuma solicitacao de ajuda cadastrada ainda.")
+                st.info("Nenhuma solicitação de ajuda cadastrada ainda.")
             else:
                 for receptor in receptores:
                     with st.expander(f"{receptor.nome} - {receptor.cidade}/{receptor.estado}", expanded=False):
@@ -511,11 +596,11 @@ else:
                             st.write(f"**CPF:** {receptor.cpf}")
                             st.write(f"**Telefone:** {receptor.telefone}")
                             st.write(f"**WhatsApp:** {receptor.whatsapp}")
-                            st.write(f"**Pessoas na familia:** {receptor.qtde_pessoas}")
-                            st.write(f"**Pode retirar:** {'Sim' if receptor.pode_retirar else 'Nao'}")
+                            st.write(f"**Pessoas na família:** {receptor.qtde_pessoas}")
+                            st.write(f"**Pode retirar:** {'Sim' if receptor.pode_retirar else 'Não'}")
                         
                         with col2:
-                            st.write(f"**Endereco:** {receptor.endereco}, {receptor.numero}")
+                            st.write(f"**Endereço:** {receptor.endereco}, {receptor.numero}")
                             st.write(f"**Bairro:** {receptor.bairro}")
                             st.write(f"**Cidade/Estado:** {receptor.cidade}/{receptor.estado}")
         
@@ -528,24 +613,24 @@ else:
             else:
                 for pet in pets:
                     with st.expander(f"{pet.nome if pet.nome else 'Sem nome'} - {pet.situacao}", expanded=False):
-                        st.write(f"**Especie:** {pet.especie}")
-                        st.write(f"**Raca:** {pet.raca if pet.raca else 'Nao informada'}")
-                        st.write(f"**Situacao:** {pet.situacao}")
+                        st.write(f"**Espécie:** {pet.especie}")
+                        st.write(f"**Raça:** {pet.raca if pet.raca else 'Não informada'}")
+                        st.write(f"**Situação:** {pet.situacao}")
                         st.write(f"**Local:** {pet.local_encontro}")
-                        st.write(f"**Descricao:** {pet.descricao}")
+                        st.write(f"**Descrição:** {pet.descricao}")
                         st.write(f"**Contato:** {pet.contato}")
                         st.write(f"**Cadastrado em:** {pet.data_cadastro.strftime('%d/%m/%Y %H:%M')}")
 
-    # Administracao
-    elif pagina == "Administracao" and st.session_state.is_admin:
-        st.title("Area Administrativa")
+    # Administração
+    elif st.session_state.pagina_atual == "Administração":
+        st.title("Área Administrativa")
         
-        st.subheader("Estatisticas do Sistema")
+        st.subheader("Estatísticas do Sistema")
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             total_usuarios = session.query(Usuario).count()
-            st.metric("Total de Usuarios", total_usuarios)
+            st.metric("Total de Usuários", total_usuarios)
         
         with col2:
             total_doadores = session.query(Doador).count()
