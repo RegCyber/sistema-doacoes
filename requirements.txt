@@ -4,4 +4,5 @@ python-dotenv
 sqlalchemy
 pandas
 python-dateutil
+Pillow
 import base64
