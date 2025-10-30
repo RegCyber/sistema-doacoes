@@ -1046,80 +1046,99 @@ else:
     #                     else:
     #                         st.info("Sem foto disponível")
 
-    # PESQUISAR DOAÇÕES - VERSÃO SIMPLIFICADA E ESTÁVEL
+    # # PESQUISAR DOAÇÕES - VERSÃO SIMPLIFICADA E ESTÁVEL
+    # elif st.session_state.pagina_atual == "Pesquisar Doações":
+    #     st.markdown('<h1 class="main-header">Pesquisar Doações Disponíveis</h1>', unsafe_allow_html=True)
+        
+    #     # Filtros simples
+    #     col1, col2 = st.columns([3, 1])
+    #     with col1:
+    #         termo_pesquisa = st.text_input(
+    #             "🔍 Pesquisar itens:", 
+    #             placeholder="Digite o nome do item...",
+    #             value=st.session_state.get('termo_pesquisa', '')
+    #         )
+    #     with col2:
+    #         filtro_disponibilidade = st.selectbox(
+    #             "Status:",
+    #             ["Todos", "Disponíveis", "Vencidos"]
+    #         )
+        
+    #     # Atualizar session_state
+    #     if termo_pesquisa != st.session_state.get('termo_pesquisa', ''):
+    #         st.session_state.termo_pesquisa = termo_pesquisa
+        
+    #     # Query simples
+    #     try:
+    #         query = session.query(ItemDoacao, Doador).join(Doador, ItemDoacao.doador_id == Doador.id)
+            
+    #         if st.session_state.get('termo_pesquisa'):
+    #             query = query.filter(ItemDoacao.item.ilike(f"%{st.session_state.termo_pesquisa}%"))
+            
+    #         hoje = datetime.today().date()
+    #         if filtro_disponibilidade == "Disponíveis":
+    #             query = query.filter(Doador.prazo_disponibilidade >= hoje)
+    #         elif filtro_disponibilidade == "Vencidos":
+    #             query = query.filter(Doador.prazo_disponibilidade < hoje)
+            
+    #         resultados = query.order_by(ItemDoacao.item.asc()).all()
+            
+    #     except Exception as e:
+    #         st.error(f"Erro ao carregar itens: {e}")
+    #         resultados = []
+        
+    #     # Exibição MUITO simples - sem componentes complexos
+    #     if not resultados:
+    #         st.info("Nenhum item de doação encontrado.")
+    #     else:
+    #         st.write(f"**Encontrados {len(resultados)} item(s):**")
+            
+    #         for item, doador in resultados:
+    #             esta_vencido = doador.prazo_disponibilidade < datetime.today().date()
+    #             status_icon = "⚠️" if esta_vencido else "🎁"
+                
+    #             # Layout simples sem colunas complexas
+    #             expander_label = f"{status_icon} {item.item} | QTDE: {item.quantidade} | 👤 {doador.nome[:15]}... | {'🚚' if doador.pode_entregar else '📦'}"
+                
+    #             with st.expander(expander_label):
+    #                 # Conteúdo simples dentro do expander
+    #                 if item.descricao:
+    #                     st.write(f"**Descrição:** {item.descricao}")
+                    
+    #                 st.write(f"**Disponível até:** {doador.prazo_disponibilidade.strftime('%d/%m/%Y')}")
+                    
+    #                 if esta_vencido:
+    #                     st.error("**ITEM VENCIDO**")
+                    
+    #                 st.write(f"**Localização:** {doador.cidade}/{doador.estado}")
+    #                 st.write(f"**Doador:** {doador.nome}")
+    #                 st.write(f"**WhatsApp:** {doador.whatsapp}")
+    #                 st.write(f"**Entrega:** {'Sim' if doador.pode_entregar else 'Não'}")
+                    
+    #                 # Foto simples
+    #                 if item.foto:
+    #                     if st.button(f"Ver Foto", key=f"btn_{item.id}"):
+    #                         exibir_imagem(item.foto)
+ 
+    # CÓDIGO DE EMERGÊNCIA - substitua toda a página de pesquisa por isso temporariamente
     elif st.session_state.pagina_atual == "Pesquisar Doações":
         st.markdown('<h1 class="main-header">Pesquisar Doações Disponíveis</h1>', unsafe_allow_html=True)
         
-        # Filtros simples
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            termo_pesquisa = st.text_input(
-                "🔍 Pesquisar itens:", 
-                placeholder="Digite o nome do item...",
-                value=st.session_state.get('termo_pesquisa', '')
-            )
-        with col2:
-            filtro_disponibilidade = st.selectbox(
-                "Status:",
-                ["Todos", "Disponíveis", "Vencidos"]
-            )
+        st.warning("🔧 Esta funcionalidade está em manutenção. Volte em breve!")
+        st.info("Enquanto isso, você pode visualizar as doações na página 'Visualizar Cadastros'")
         
-        # Atualizar session_state
-        if termo_pesquisa != st.session_state.get('termo_pesquisa', ''):
-            st.session_state.termo_pesquisa = termo_pesquisa
-        
-        # Query simples
+        # Mostra apenas uma lista simples
         try:
-            query = session.query(ItemDoacao, Doador).join(Doador, ItemDoacao.doador_id == Doador.id)
-            
-            if st.session_state.get('termo_pesquisa'):
-                query = query.filter(ItemDoacao.item.ilike(f"%{st.session_state.termo_pesquisa}%"))
-            
-            hoje = datetime.today().date()
-            if filtro_disponibilidade == "Disponíveis":
-                query = query.filter(Doador.prazo_disponibilidade >= hoje)
-            elif filtro_disponibilidade == "Vencidos":
-                query = query.filter(Doador.prazo_disponibilidade < hoje)
-            
-            resultados = query.order_by(ItemDoacao.item.asc()).all()
-            
-        except Exception as e:
-            st.error(f"Erro ao carregar itens: {e}")
-            resultados = []
-        
-        # Exibição MUITO simples - sem componentes complexos
-        if not resultados:
-            st.info("Nenhum item de doação encontrado.")
-        else:
-            st.write(f"**Encontrados {len(resultados)} item(s):**")
-            
-            for item, doador in resultados:
-                esta_vencido = doador.prazo_disponibilidade < datetime.today().date()
-                status_icon = "⚠️" if esta_vencido else "🎁"
-                
-                # Layout simples sem colunas complexas
-                expander_label = f"{status_icon} {item.item} | QTDE: {item.quantidade} | 👤 {doador.nome[:15]}... | {'🚚' if doador.pode_entregar else '📦'}"
-                
-                with st.expander(expander_label):
-                    # Conteúdo simples dentro do expander
-                    if item.descricao:
-                        st.write(f"**Descrição:** {item.descricao}")
-                    
-                    st.write(f"**Disponível até:** {doador.prazo_disponibilidade.strftime('%d/%m/%Y')}")
-                    
-                    if esta_vencido:
-                        st.error("**ITEM VENCIDO**")
-                    
-                    st.write(f"**Localização:** {doador.cidade}/{doador.estado}")
-                    st.write(f"**Doador:** {doador.nome}")
-                    st.write(f"**WhatsApp:** {doador.whatsapp}")
-                    st.write(f"**Entrega:** {'Sim' if doador.pode_entregar else 'Não'}")
-                    
-                    # Foto simples
-                    if item.foto:
-                        if st.button(f"Ver Foto", key=f"btn_{item.id}"):
-                            exibir_imagem(item.foto)
- 
+            itens = session.query(ItemDoacao).order_by(ItemDoacao.item.asc()).all()
+            if itens:
+                st.write("**Itens disponíveis:**")
+                for item in itens:
+                    st.write(f"• {item.item} (Quantidade: {item.quantidade})")
+            else:
+                st.info("Nenhum item cadastrado.")
+        except:
+            st.error("Erro ao conectar com o banco de dados")
+
     # Solicitar Ajuda - COM VÍNCULO DE CPF
     elif st.session_state.pagina_atual == "Solicitar Ajuda":
         st.markdown('<h1 class="main-header">Solicitar Ajuda</h1>', unsafe_allow_html=True)
@@ -1714,5 +1733,4 @@ else:
                         st.rerun()
 
     # Fechar sessão
-
     session.close()
