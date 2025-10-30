@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # Adicione esta linha para limpar estado problemático
-st.session_state.clear()
+# st.session_state.clear()
 
 # CSS personalizado com melhorias de acessibilidade e margens reduzidas
 def aplicar_css():
@@ -1733,4 +1733,5 @@ else:
                         st.rerun()
 
     # Fechar sessão
+
     session.close()
