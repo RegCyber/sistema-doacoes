@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Date
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Date, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
@@ -20,7 +20,7 @@ class Usuario(Base):
     whatsapp = Column(String(20), nullable=False)
     senha_hash = Column(String(255), nullable=False)
     salt = Column(String(255), nullable=False)
-    cpf = Column(String(11), unique=True, nullable=False)  # NOVO CAMPO ADICIONADO
+    cpf = Column(String(11), unique=True, nullable=False)
     is_admin = Column(Boolean, default=False)
     data_cadastro = Column(DateTime, default=datetime.now)
     
@@ -83,9 +83,10 @@ class Pet(Base):
     especie = Column(String(50), nullable=False)
     raca = Column(String(50), nullable=True)
     descricao = Column(Text, nullable=False)
-    situacao = Column(String(50), nullable=False)  # Perdido, Encontrado, Para Adoção
+    situacao = Column(String(50), nullable=False)
     local_encontro = Column(String(200), nullable=False)
     contato = Column(String(20), nullable=False)
+    foto = Column(LargeBinary, nullable=True)  # NOVO: campo para foto do pet
     data_cadastro = Column(DateTime, default=datetime.now)
     
     # Relacionamentos
@@ -99,6 +100,7 @@ class ItemDoacao(Base):
     item = Column(String(100), nullable=False)
     quantidade = Column(Integer, nullable=False)
     descricao = Column(Text, nullable=True)
+    foto = Column(LargeBinary, nullable=True)  # NOVO: campo para foto do item
     data_cadastro = Column(DateTime, default=datetime.now)
     
     # Relacionamentos
