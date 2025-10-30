@@ -16,6 +16,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Adicione esta linha para limpar estado problemático
+# st.session_state.clear()
+
 # CSS personalizado com melhorias de acessibilidade e margens reduzidas
 def aplicar_css():
     st.markdown("""
@@ -937,112 +940,185 @@ else:
                 st.rerun()   
 
 
-    # PESQUISAR DOAÇÕES - VERSÃO SIMPLES COM EXPANDER
+    # # PESQUISAR DOAÇÕES - VERSÃO SIMPLES COM EXPANDER
+    # elif st.session_state.pagina_atual == "Pesquisar Doações":
+    #     st.markdown('<h1 class="main-header">Pesquisar Doações Disponíveis</h1>', unsafe_allow_html=True)
+        
+    #     # Filtro de pesquisa (mesmo código anterior)
+    #     col1, col2, col3 = st.columns([3, 1, 1])
+    #     with col1:
+    #         termo_pesquisa = st.text_input(
+    #             "🔍 Pesquisar itens:", 
+    #             placeholder="Digite o nome do item (ex: cama, roupa, alimento...)",
+    #             value=st.session_state.termo_pesquisa,
+    #             key='pesquisa_input'
+    #         )
+    #     with col2:
+    #         filtro_disponibilidade = st.selectbox(
+    #             "Status:",
+    #             ["Todos", "Disponíveis", "Vencidos"],
+    #             key="filtro_status"
+    #         )
+    #     with col3:
+    #         st.write("")
+    #         st.write("")
+    #         if st.button("Limpar Filtros", use_container_width=True):
+    #             st.session_state.termo_pesquisa = ''
+    #             st.rerun()
+        
+    #     if termo_pesquisa != st.session_state.termo_pesquisa:
+    #         st.session_state.termo_pesquisa = termo_pesquisa
+
+    #     # QUERY (mesmo código anterior)
+    #     try:
+    #         query = session.query(ItemDoacao, Doador).join(Doador, ItemDoacao.doador_id == Doador.id)
+            
+    #         if st.session_state.termo_pesquisa:
+    #             query = query.filter(ItemDoacao.item.ilike(f"%{st.session_state.termo_pesquisa}%"))
+            
+    #         hoje = datetime.today().date()
+    #         if filtro_disponibilidade == "Disponíveis":
+    #             query = query.filter(Doador.prazo_disponibilidade >= hoje)
+    #         elif filtro_disponibilidade == "Vencidos":
+    #             query = query.filter(Doador.prazo_disponibilidade < hoye)
+            
+    #         # Ordenar por nome do item (A-Z)
+    #         resultados = query.order_by(ItemDoacao.item.asc()).all()
+            
+    #     except Exception as e:
+    #         st.error(f"Erro ao carregar itens: {e}")
+    #         resultados = []
+        
+    #     # EXIBIÇÃO COM EXPANDERS
+    #     if not resultados:
+    #         st.info("Nenhum item de doação encontrado com os filtros aplicados.")
+    #     else:
+    #         st.write(f"**Encontrados {len(resultados)} item(s) - ordenados por nome:**")
+            
+    #         for idx, (item, doador) in enumerate(resultados):
+    #             esta_vencido = doador.prazo_disponibilidade < datetime.today().date()
+                
+    #             # Título do expander COM DOADOR E ENTREGA NA MESMA LINHA
+    #             status_icon = "⚠️" if esta_vencido else "🎁"
+    #             entrega_icon = "🚚" if doador.pode_entregar else "📦"
+                
+    #             # Formatar o nome do doador se for muito longo
+    #             doador_nome = doador.nome
+    #             if len(doador_nome) > 20:
+    #                 doador_nome = doador_nome[:20] + "..."
+                
+    #             expander_title = f"{status_icon} {item.item} | QTDE: {item.quantidade} | 👤 {doador_nome} | {entrega_icon} {'Sim' if doador.pode_entregar else 'Não'}"
+                
+    #             with st.expander(expander_title, expanded=False):
+    #                 col1, col2 = st.columns([2, 1])
+                    
+    #                 with col1:
+    #                     # Informações do item
+    #                     if item.descricao:
+    #                         st.write(f"**Descrição:** {item.descricao}")
+                        
+    #                     st.write(f"**Disponível até:** {doador.prazo_disponibilidade.strftime('%d/%m/%Y')}")
+    #                     if esta_vencido:
+    #                         st.error("**ITEM VENCIDO**")
+                        
+    #                     st.write(f"**Localização:** {doador.cidade}/{doador.estado}")
+                        
+    #                     # Informações do doador (completas)
+    #                     st.markdown("---")
+    #                     st.write(f"**📞 Doador:** {doador.nome}")
+    #                     st.write(f"**📱 WhatsApp:** {doador.whatsapp}")
+    #                     st.write(f"**📞 Telefone:** {doador.telefone}")
+    #                     st.write(f"**📍 Endereço:** {doador.endereco}, {doador.numero} - {doador.bairro}")
+    #                     st.write(f"**🚚 Pode entregar:** {'✅ Sim' if doador.pode_entregar else '❌ Não'}")
+                    
+    #                 with col2:
+    #                     # Foto com possibilidade de expandir
+    #                     if item.foto:
+    #                         # Exibir foto em tamanho médio que pode ser clicada para expandir
+    #                         if st.button("📸 Ver Foto em Tamanho Real", key=f"foto_{item.id}", use_container_width=True):
+    #                             # Se clicar no botão, exibe a foto em tamanho grande
+    #                             exibir_imagem(item.foto)
+    #                         else:
+    #                             # Exibe preview pequeno
+    #                             image = Image.open(io.BytesIO(item.foto))
+    #                             image.thumbnail((150, 150))
+    #                             st.image(image, caption="Preview da foto")
+    #                     else:
+    #                         st.info("Sem foto disponível")
+
+    # PESQUISAR DOAÇÕES - VERSÃO SIMPLIFICADA E ESTÁVEL
     elif st.session_state.pagina_atual == "Pesquisar Doações":
         st.markdown('<h1 class="main-header">Pesquisar Doações Disponíveis</h1>', unsafe_allow_html=True)
         
-        # Filtro de pesquisa (mesmo código anterior)
-        col1, col2, col3 = st.columns([3, 1, 1])
+        # Filtros simples
+        col1, col2 = st.columns([3, 1])
         with col1:
             termo_pesquisa = st.text_input(
                 "🔍 Pesquisar itens:", 
-                placeholder="Digite o nome do item (ex: cama, roupa, alimento...)",
-                value=st.session_state.termo_pesquisa,
-                key='pesquisa_input'
+                placeholder="Digite o nome do item...",
+                value=st.session_state.get('termo_pesquisa', '')
             )
         with col2:
             filtro_disponibilidade = st.selectbox(
                 "Status:",
-                ["Todos", "Disponíveis", "Vencidos"],
-                key="filtro_status"
+                ["Todos", "Disponíveis", "Vencidos"]
             )
-        with col3:
-            st.write("")
-            st.write("")
-            if st.button("Limpar Filtros", use_container_width=True):
-                st.session_state.termo_pesquisa = ''
-                st.rerun()
         
-        if termo_pesquisa != st.session_state.termo_pesquisa:
+        # Atualizar session_state
+        if termo_pesquisa != st.session_state.get('termo_pesquisa', ''):
             st.session_state.termo_pesquisa = termo_pesquisa
-
-        # QUERY (mesmo código anterior)
+        
+        # Query simples
         try:
             query = session.query(ItemDoacao, Doador).join(Doador, ItemDoacao.doador_id == Doador.id)
             
-            if st.session_state.termo_pesquisa:
+            if st.session_state.get('termo_pesquisa'):
                 query = query.filter(ItemDoacao.item.ilike(f"%{st.session_state.termo_pesquisa}%"))
             
             hoje = datetime.today().date()
             if filtro_disponibilidade == "Disponíveis":
                 query = query.filter(Doador.prazo_disponibilidade >= hoje)
             elif filtro_disponibilidade == "Vencidos":
-                query = query.filter(Doador.prazo_disponibilidade < hoye)
+                query = query.filter(Doador.prazo_disponibilidade < hoje)
             
-            # Ordenar por nome do item (A-Z)
             resultados = query.order_by(ItemDoacao.item.asc()).all()
             
         except Exception as e:
             st.error(f"Erro ao carregar itens: {e}")
             resultados = []
         
-        # EXIBIÇÃO COM EXPANDERS
+        # Exibição MUITO simples - sem componentes complexos
         if not resultados:
-            st.info("Nenhum item de doação encontrado com os filtros aplicados.")
+            st.info("Nenhum item de doação encontrado.")
         else:
-            st.write(f"**Encontrados {len(resultados)} item(s) - ordenados por nome:**")
+            st.write(f"**Encontrados {len(resultados)} item(s):**")
             
-            for idx, (item, doador) in enumerate(resultados):
+            for item, doador in resultados:
                 esta_vencido = doador.prazo_disponibilidade < datetime.today().date()
-                
-                # Título do expander COM DOADOR E ENTREGA NA MESMA LINHA
                 status_icon = "⚠️" if esta_vencido else "🎁"
-                entrega_icon = "🚚" if doador.pode_entregar else "📦"
                 
-                # Formatar o nome do doador se for muito longo
-                doador_nome = doador.nome
-                if len(doador_nome) > 20:
-                    doador_nome = doador_nome[:20] + "..."
+                # Layout simples sem colunas complexas
+                expander_label = f"{status_icon} {item.item} | QTDE: {item.quantidade} | 👤 {doador.nome[:15]}... | {'🚚' if doador.pode_entregar else '📦'}"
                 
-                expander_title = f"{status_icon} {item.item} | QTDE: {item.quantidade} | 👤 {doador_nome} | {entrega_icon} {'Sim' if doador.pode_entregar else 'Não'}"
-                
-                with st.expander(expander_title, expanded=False):
-                    col1, col2 = st.columns([2, 1])
+                with st.expander(expander_label):
+                    # Conteúdo simples dentro do expander
+                    if item.descricao:
+                        st.write(f"**Descrição:** {item.descricao}")
                     
-                    with col1:
-                        # Informações do item
-                        if item.descricao:
-                            st.write(f"**Descrição:** {item.descricao}")
-                        
-                        st.write(f"**Disponível até:** {doador.prazo_disponibilidade.strftime('%d/%m/%Y')}")
-                        if esta_vencido:
-                            st.error("**ITEM VENCIDO**")
-                        
-                        st.write(f"**Localização:** {doador.cidade}/{doador.estado}")
-                        
-                        # Informações do doador (completas)
-                        st.markdown("---")
-                        st.write(f"**📞 Doador:** {doador.nome}")
-                        st.write(f"**📱 WhatsApp:** {doador.whatsapp}")
-                        st.write(f"**📞 Telefone:** {doador.telefone}")
-                        st.write(f"**📍 Endereço:** {doador.endereco}, {doador.numero} - {doador.bairro}")
-                        st.write(f"**🚚 Pode entregar:** {'✅ Sim' if doador.pode_entregar else '❌ Não'}")
+                    st.write(f"**Disponível até:** {doador.prazo_disponibilidade.strftime('%d/%m/%Y')}")
                     
-                    with col2:
-                        # Foto com possibilidade de expandir
-                        if item.foto:
-                            # Exibir foto em tamanho médio que pode ser clicada para expandir
-                            if st.button("📸 Ver Foto em Tamanho Real", key=f"foto_{item.id}", use_container_width=True):
-                                # Se clicar no botão, exibe a foto em tamanho grande
-                                exibir_imagem(item.foto)
-                            else:
-                                # Exibe preview pequeno
-                                image = Image.open(io.BytesIO(item.foto))
-                                image.thumbnail((150, 150))
-                                st.image(image, caption="Preview da foto")
-                        else:
-                            st.info("Sem foto disponível")
-
+                    if esta_vencido:
+                        st.error("**ITEM VENCIDO**")
+                    
+                    st.write(f"**Localização:** {doador.cidade}/{doador.estado}")
+                    st.write(f"**Doador:** {doador.nome}")
+                    st.write(f"**WhatsApp:** {doador.whatsapp}")
+                    st.write(f"**Entrega:** {'Sim' if doador.pode_entregar else 'Não'}")
+                    
+                    # Foto simples
+                    if item.foto:
+                        if st.button(f"Ver Foto", key=f"btn_{item.id}"):
+                            exibir_imagem(item.foto)
  
     # Solicitar Ajuda - COM VÍNCULO DE CPF
     elif st.session_state.pagina_atual == "Solicitar Ajuda":
