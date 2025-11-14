@@ -459,7 +459,7 @@ if st.session_state.usuario_logado:
         "Início": "🏠", 
         "Cadastrar Doação": "🎁", 
         "Solicitar Ajuda": "🆘", 
-        "Pets Perdidos": "🐾", 
+        "Area dos Pets": "🐾", 
         "Visualizar Cadastros": "👀",
         "Pesquisar Doações": "🔍"
     }
@@ -599,7 +599,7 @@ else:
             st.write("""
             - **🎁 Cadastre Doações**: Ofereça itens que podem ajudar pessoas afetadas
             - **🆘 Solicite Ajuda**: Se você foi afetado, cadastre suas necessidades
-            - **🐾 Ajude Pets**: Cadastre pets perdidos ou encontrados
+            - **🐾 Ajude Pets**: Cadastre Area dos Pets ou encontrados
             - **🔍 Pesquise Doações**: Encontre itens disponíveis perto de você
             """)
         
@@ -1220,9 +1220,9 @@ else:
                 st.session_state.edicao_ativa = None
                 st.rerun()
 
-    # Pets Perdidos
-    elif st.session_state.pagina_atual == "Pets Perdidos":
-        st.markdown('<h1 class="main-header">Pets Perdidos/Encontrados</h1>', unsafe_allow_html=True)
+    # Area dos Pets
+    elif st.session_state.pagina_atual == "Area dos Pets":
+        st.markdown('<h1 class="main-header">Area dos Pets/Encontrados</h1>', unsafe_allow_html=True)
         
         tab1, tab2, tab3 = st.tabs(["Cadastrar/Editar Pet", "Ver Pets", "Pesquisar Pets"])
         
@@ -1375,7 +1375,7 @@ else:
                             with col_edit:
                                 if st.button("✏️ Editar", key=f"edit_pet_{pet.id}", width='stretch'):
                                     st.session_state.edicao_ativa = f"pet_{pet.id}"
-                                    st.session_state.pagina_atual = "Pets Perdidos"
+                                    st.session_state.pagina_atual = "Area dos Pets"
                                     st.rerun()
                             
                             with col_del:
@@ -1582,7 +1582,7 @@ else:
                             with col_edit:
                                 if st.button("✏️ Editar", key=f"edit_pet_{pet.id}", width='stretch'):
                                     st.session_state.edicao_ativa = f"pet_{pet.id}"
-                                    st.session_state.pagina_atual = "Pets Perdidos"
+                                    st.session_state.pagina_atual = "Area dos Pets"
                                     st.rerun()
                             
                             with col_del:
@@ -1645,3 +1645,4 @@ else:
 
     # Fechar sessão
     session.close()
+
