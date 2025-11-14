@@ -7,10 +7,11 @@ import base64
 import io
 from PIL import Image
 from sqlalchemy.orm import joinedload
+from sqlalchemy import text
 
 # Configuração da página
 st.set_page_config(
-    page_title="Sistema de Doações para Enchentes",
+    page_title="Doações para Impactados pelas Enchentes",
     page_icon="🤝",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -65,19 +66,19 @@ body {
     color: var(--primary-color);
     text-align: left; 
     margin-bottom: 0.8rem;
-    margin-top: 0.1rem;
+    margin-top: 0rem;
     font-weight: 700; 
     border-bottom: 3px solid var(--secondary-color); 
-    padding-bottom: 0.3rem;
+    padding-bottom: 0.1rem;
 }
 
 /* SIDEBAR COM MARGEM REDUZIDA */
 .css-1d391kg, .css-1lcbmhc, .stSidebar {
-    padding-top: 0.5rem !important;
+    padding-top: 0.1rem !important;
 }
 
 .stSidebar .sidebar-content {
-    padding-top: 0.5rem !important;
+    padding-top: 0.1rem !important;
 }
 
 /* Melhorias de acessibilidade para cartões de métrica */
@@ -446,7 +447,7 @@ if st.session_state.usuario_logado:
     if st.session_state.is_admin:
         st.sidebar.info("Modo Administrador")
     
-    if st.sidebar.button("Sair", key="logout_btn", use_container_width=True):
+    if st.sidebar.button("Sair", key="logout_btn", width='stretch'):
         fazer_logout()
         st.rerun()
     
@@ -467,7 +468,7 @@ if st.session_state.usuario_logado:
         paginas["Administração"] = "⚡"
     
     for pagina_nome, emoji in paginas.items():
-        if st.sidebar.button(f"{emoji} {pagina_nome}", key=f"nav_{pagina_nome}", use_container_width=True):
+        if st.sidebar.button(f"{emoji} {pagina_nome}", key=f"nav_{pagina_nome}", width='stretch'):
             st.session_state.pagina_atual = pagina_nome
             st.rerun()
     
@@ -483,7 +484,7 @@ else:
                                  help="Digite seu nome de usuário")
             senha = st.text_input("Senha", type="password", key="senha_input",
                                  help="Digite sua senha")
-            if st.button("Entrar", key="login_btn", use_container_width=True):
+            if st.button("Entrar", key="login_btn", width='stretch'):
                 if login and senha:
                     if fazer_login(login, senha):
                         st.success("Login realizado!")
@@ -507,7 +508,7 @@ else:
             senha = st.text_input("Senha", type="password", key="cad_senha",
                                  help="Mínimo de 6 caracteres")
             
-            if st.button("Cadastrar", key="cad_btn", use_container_width=True):
+            if st.button("Cadastrar", key="cad_btn", width='stretch'):
                 if login and email and whatsapp and senha and cpf:
                     if validar_cpf(cpf):
                         sucesso, mensagem = cadastrar_usuario(login, email, whatsapp, senha, formatar_cpf(cpf))
@@ -535,7 +536,7 @@ st.markdown("""
 
 # Páginas principais
 if not st.session_state.usuario_logado:
-    st.title("Sistema de Doações para Enchentes")
+    st.title("Doações para Impactados pelas Enchentes")
     
     # Imagem centralizada usando st.image
     try:
@@ -550,7 +551,7 @@ if not st.session_state.usuario_logado:
 else:
     # Sessão do banco
     session = get_session()
-
+    
     # Página Inicial
     if st.session_state.pagina_atual == "Início":
         st.markdown('<h1 class="main-header">Solidariedade em Tempos de Enchente</h1>', unsafe_allow_html=True)
@@ -589,7 +590,6 @@ else:
             total_pets = session.query(Pet).count()
             st.markdown(f'<div class="metric-card"><h3>🐾 Pets</h3><h2>{total_pets}</h2></div>', unsafe_allow_html=True)
 
-        # Resto do código...
         # Adicionar mais conteúdo para a página inicial
         st.markdown("---")
         col_info1, col_info2 = st.columns(2)
@@ -612,7 +612,7 @@ else:
             - Emergência: 190
             """)
 
-        # Cadastrar Doação - CORRIGIDO
+    # Cadastrar Doação
     elif st.session_state.pagina_atual == "Cadastrar Doação":
         st.markdown('<h1 class="main-header">Cadastrar Doação</h1>', unsafe_allow_html=True)
         
@@ -730,7 +730,7 @@ else:
             # CORREÇÃO: Botão de adicionar item no lado ESQUERDO
             add_col1, add_col2 = st.columns([1, 3])
             with add_col1:
-                if st.form_submit_button("➕ Acrescentar Item", key="add_item_btn", use_container_width=True):
+                if st.form_submit_button("➕ Acrescentar Item", key="add_item_btn", width='stretch'):
                     st.session_state.itens_doacao.append({'item': '', 'quantidade': 1, 'descricao': '', 'foto': None})
                     st.rerun()
             
@@ -777,7 +777,7 @@ else:
                     
                     # Botão para remover item (exceto se for o único)
                     if len(st.session_state.itens_doacao) > 1:
-                        if st.form_submit_button(f"❌ Remover Item {i+1}", key=f"remove_{i}", use_container_width=True):
+                        if st.form_submit_button(f"❌ Remover Item {i+1}", key=f"remove_{i}", width='stretch'):
                             itens_para_remover.append(i)
                 
                 # Atualizar dados na session state
@@ -803,11 +803,11 @@ else:
             with col2:
                 if doador_editando:
                     submitted = st.form_submit_button("💾 ATUALIZAR DOAÇÃO", 
-                                                    use_container_width=True,
+                                                    width='stretch',
                                                     type="primary")
                 else:
                     submitted = st.form_submit_button("🎁 CADASTRAR DOAÇÃO", 
-                                                    use_container_width=True,
+                                                    width='stretch',
                                                     type="primary")
             
             if submitted:
@@ -931,17 +931,16 @@ else:
         if doador_editando:
             # Usar uma key única baseada no ID do doador
             cancel_key = f"cancel_edit_{doador_editando.id}"
-            if st.button("❌ Cancelar Edição", key=cancel_key, use_container_width=True):
+            if st.button("❌ Cancelar Edição", key=cancel_key, width='stretch'):
                 st.session_state.edicao_ativa = None
                 st.session_state.itens_doacao = [{'item': '', 'quantidade': 1, 'descricao': '', 'foto': None}]
                 st.rerun()   
 
-
-    # PESQUISAR DOAÇÕES - VERSÃO SIMPLES COM EXPANDER
+    # PESQUISAR DOAÇÕES
     elif st.session_state.pagina_atual == "Pesquisar Doações":
         st.markdown('<h1 class="main-header">Pesquisar Doações Disponíveis</h1>', unsafe_allow_html=True)
         
-        # Filtro de pesquisa (mesmo código anterior)
+        # Filtro de pesquisa
         col1, col2, col3 = st.columns([3, 1, 1])
         with col1:
             termo_pesquisa = st.text_input(
@@ -959,14 +958,14 @@ else:
         with col3:
             st.write("")
             st.write("")
-            if st.button("Limpar Filtros", use_container_width=True):
+            if st.button("Limpar Filtros", width='stretch'):
                 st.session_state.termo_pesquisa = ''
                 st.rerun()
         
         if termo_pesquisa != st.session_state.termo_pesquisa:
             st.session_state.termo_pesquisa = termo_pesquisa
 
-        # QUERY (mesmo código anterior)
+        # QUERY
         try:
             query = session.query(ItemDoacao, Doador).join(Doador, ItemDoacao.doador_id == Doador.id)
             
@@ -977,7 +976,7 @@ else:
             if filtro_disponibilidade == "Disponíveis":
                 query = query.filter(Doador.prazo_disponibilidade >= hoje)
             elif filtro_disponibilidade == "Vencidos":
-                query = query.filter(Doador.prazo_disponibilidade < hoye)
+                query = query.filter(Doador.prazo_disponibilidade < hoje)
             
             # Ordenar por nome do item (A-Z)
             resultados = query.order_by(ItemDoacao.item.asc()).all()
@@ -1032,7 +1031,7 @@ else:
                         # Foto com possibilidade de expandir
                         if item.foto:
                             # Exibir foto em tamanho médio que pode ser clicada para expandir
-                            if st.button("📸 Ver Foto em Tamanho Real", key=f"foto_{item.id}", use_container_width=True):
+                            if st.button("📸 Ver Foto em Tamanho Real", key=f"foto_{item.id}", width='stretch'):
                                 # Se clicar no botão, exibe a foto em tamanho grande
                                 exibir_imagem(item.foto)
                             else:
@@ -1043,7 +1042,7 @@ else:
                         else:
                             st.info("Sem foto disponível")
 
-     # Solicitar Ajuda - COM VÍNCULO DE CPF
+    # Solicitar Ajuda
     elif st.session_state.pagina_atual == "Solicitar Ajuda":
         st.markdown('<h1 class="main-header">Solicitar Ajuda</h1>', unsafe_allow_html=True)
         
@@ -1121,9 +1120,9 @@ else:
                                      value=receptor_editando.estado if receptor_editando else "")
             
             if receptor_editando:
-                submitted = st.form_submit_button("💾 Atualizar Solicitação", use_container_width=True)  # CORREÇÃO: use_container_width
+                submitted = st.form_submit_button("💾 Atualizar Solicitação", width='stretch')
             else:
-                submitted = st.form_submit_button("Solicitar Ajuda", use_container_width=True)  # CORREÇÃO: use_container_width
+                submitted = st.form_submit_button("Solicitar Ajuda", width='stretch')
             
             if submitted:
                 campos_ok = all([cpf, nome, telefone, whatsapp, cep, endereco, numero, bairro, cidade, estado, pode_retirar])
@@ -1207,11 +1206,11 @@ else:
         # Botão para cancelar edição (FORA DO FORMULÁRIO) - CORRIGIDO
         if receptor_editando:
             cancel_key = f"cancel_edit_receptor_{receptor_editando.id}" if receptor_editando else "cancel_edit_receptor_new"
-            if st.button("❌ Cancelar Edição", key=cancel_key, use_container_width=True):
+            if st.button("❌ Cancelar Edição", key=cancel_key, width='stretch'):
                 st.session_state.edicao_ativa = None
                 st.rerun()
 
-    # Pets Perdidos - COM FOTO
+    # Pets Perdidos
     elif st.session_state.pagina_atual == "Pets Perdidos":
         st.markdown('<h1 class="main-header">Pets Perdidos/Encontrados</h1>', unsafe_allow_html=True)
         
@@ -1271,9 +1270,9 @@ else:
                     exibir_imagem(pet_editando.foto)
                 
                 if pet_editando:
-                    submitted = st.form_submit_button("💾 Atualizar Pet", use_container_width=True)  # CORREÇÃO: use_container_width
+                    submitted = st.form_submit_button("💾 Atualizar Pet", width='stretch')
                 else:
-                    submitted = st.form_submit_button("Cadastrar Pet", use_container_width=True)  # CORREÇÃO: use_container_width
+                    submitted = st.form_submit_button("Cadastrar Pet", width='stretch')
                 
                 if submitted:
                     campos_ok = all([especie, descricao, local_encontro, contato, situacao])
@@ -1328,7 +1327,7 @@ else:
            # Botão para cancelar edição - CORRIGIDO
             if pet_editando:
                 cancel_key = f"cancel_edit_pet_{pet_editando.id}" if pet_editando else "cancel_edit_pet_new"
-                if st.button("❌ Cancelar Edição", key=cancel_key, use_container_width=True):
+                if st.button("❌ Cancelar Edição", key=cancel_key, width='stretch'):
                     st.session_state.edicao_ativa = None
                     st.rerun()
         
@@ -1351,7 +1350,7 @@ else:
                             st.write(f"**Descrição:** {pet.descricao}")
                             st.write(f"**Contato:** {pet.contato}")
                             st.write(f"**Cadastrado em:** {pet.data_cadastro.strftime('%d/%m/%Y %H:%M')}")
-                            st.write(f"**Cadastrado por:** {pet.usuario.login} (CPF: {pet.usuario.cpf})")
+                            st.write(f"**Cadastrado por:** {pet.usuario.login}")
                         
                         with col2:
                             if pet.foto:
@@ -1364,12 +1363,12 @@ else:
                             col_edit, col_del = st.columns(2)
                             
                             with col_edit:
-                                if st.button("✏️ Editar", key=f"edit_pet_{pet.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                if st.button("✏️ Editar", key=f"edit_pet_{pet.id}", width='stretch'):
                                     st.session_state.edicao_ativa = f"pet_{pet.id}"
                                     st.rerun()
                             
                             with col_del:
-                                if st.button("🗑️ Excluir", key=f"del_pet_{pet.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                if st.button("🗑️ Excluir", key=f"del_pet_{pet.id}", width='stretch'):
                                     session.delete(pet)
                                     session.commit()
                                     st.success("Pet excluído com sucesso!")
@@ -1389,7 +1388,7 @@ else:
                                              ["Todas", "Perdido", "Encontrado", "Para Adoção"])
             with col2:
                 filtro_nome = st.text_input("Filtrar por nome:", placeholder="Digite o nome do pet")
-                if st.button("🔍 Aplicar Filtros", use_container_width=True):  # CORREÇÃO: use_container_width
+                if st.button("🔍 Aplicar Filtros", width='stretch'):
                     pass
             
             # Buscar pets com filtros
@@ -1436,7 +1435,7 @@ else:
                         
                         st.divider()
 
-    # Visualizar Cadastros - COM VÍNCULO DE CPF E FOTOS
+    # Visualizar Cadastros
     elif st.session_state.pagina_atual == "Visualizar Cadastros":
         st.markdown('<h1 class="main-header">Visualizar Cadastros</h1>', unsafe_allow_html=True)
         
@@ -1454,7 +1453,6 @@ else:
                         col1, col2 = st.columns(2)
                         
                         with col1:
-                            st.write(f"**CPF:** {doador.cpf}")
                             st.write(f"**Telefone:** {doador.telefone}")
                             st.write(f"**WhatsApp:** {doador.whatsapp}")
                             st.write(f"**Pode entregar:** {'Sim' if doador.pode_entregar else 'Não'}")
@@ -1464,7 +1462,7 @@ else:
                             st.write(f"**Endereço:** {doador.endereco}, {doador.numero}")
                             st.write(f"**Bairro:** {doador.bairro}")
                             st.write(f"**Cidade/Estado:** {doador.cidade}/{doador.estado}")
-                            st.write(f"**Cadastrado por:** {doador.usuario.login} (CPF: {doador.usuario.cpf})")
+                            st.write(f"**Cadastrado por:** {doador.usuario.login}")
                         
                         if doador.itens:
                             st.write("**Itens para doação:**")
@@ -1475,7 +1473,7 @@ else:
                                            (f" - {item.descricao}" if item.descricao else ""))
                                 with col_item2:
                                     if item.foto:
-                                        if st.button("📷 Ver Foto", key=f"foto_item_{item.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                        if st.button("📷 Ver Foto", key=f"foto_item_{item.id}", width='stretch'):
                                             exibir_imagem(item.foto)
                         
                         # Botões de ação - apenas para usuário que criou ou admin
@@ -1483,13 +1481,13 @@ else:
                             col_edit, col_del = st.columns(2)
                             
                             with col_edit:
-                                if st.button("✏️ Editar", key=f"edit_doador_{doador.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                if st.button("✏️ Editar", key=f"edit_doador_{doador.id}", width='stretch'):
                                     st.session_state.edicao_ativa = f"doador_{doador.id}"
                                     st.session_state.pagina_atual = "Cadastrar Doação"
                                     st.rerun()
                             
                             with col_del:
-                                if st.button("🗑️ Excluir", key=f"del_doador_{doador.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                if st.button("🗑️ Excluir", key=f"del_doador_{doador.id}", width='stretch'):
                                     # Excluir itens primeiro
                                     for item in doador.itens:
                                         session.delete(item)
@@ -1510,7 +1508,6 @@ else:
                         col1, col2 = st.columns(2)
                         
                         with col1:
-                            st.write(f"**CPF:** {receptor.cpf}")
                             st.write(f"**Telefone:** {receptor.telefone}")
                             st.write(f"**WhatsApp:** {receptor.whatsapp}")
                             st.write(f"**Pessoas na família:** {receptor.qtde_pessoas}")
@@ -1520,20 +1517,20 @@ else:
                             st.write(f"**Endereço:** {receptor.endereco}, {receptor.numero}")
                             st.write(f"**Bairro:** {receptor.bairro}")
                             st.write(f"**Cidade/Estado:** {receptor.cidade}/{receptor.estado}")
-                            st.write(f"**Cadastrado por:** {receptor.usuario.login} (CPF: {receptor.usuario.cpf})")
+                            st.write(f"**Cadastrado por:** {receptor.usuario.login}")
                         
                         # Botões de ação - apenas para usuário que criou ou admin
                         if usuario_tem_permissao(receptor):
                             col_edit, col_del = st.columns(2)
                             
                             with col_edit:
-                                if st.button("✏️ Editar", key=f"edit_receptor_{receptor.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                if st.button("✏️ Editar", key=f"edit_receptor_{receptor.id}", width='stretch'):
                                     st.session_state.edicao_ativa = f"receptor_{receptor.id}"
                                     st.session_state.pagina_atual = "Solicitar Ajuda"
                                     st.rerun()
                             
                             with col_del:
-                                if st.button("🗑️ Excluir", key=f"del_receptor_{receptor.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                if st.button("🗑️ Excluir", key=f"del_receptor_{receptor.id}", width='stretch'):
                                     session.delete(receptor)
                                     session.commit()
                                     st.success("Solicitação excluída com sucesso!")
@@ -1565,20 +1562,20 @@ else:
                                 st.info("📷 Sem foto disponível")
                             
                             st.write(f"**Cadastrado em:** {pet.data_cadastro.strftime('%d/%m/%Y %H:%M')}")
-                            st.write(f"**Cadastrado por:** {pet.usuario.login} (CPF: {pet.usuario.cpf})")
+                            st.write(f"**Cadastrado por:** {pet.usuario.login}")
                         
                         # Botões de ação - apenas para usuário que criou ou admin
                         if usuario_tem_permissao(pet):
                             col_edit, col_del = st.columns(2)
                             
                             with col_edit:
-                                if st.button("✏️ Editar", key=f"edit_pet_{pet.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                if st.button("✏️ Editar", key=f"edit_pet_{pet.id}", width='stretch'):
                                     st.session_state.edicao_ativa = f"pet_{pet.id}"
                                     st.session_state.pagina_atual = "Pets Perdidos"
                                     st.rerun()
                             
                             with col_del:
-                                if st.button("🗑️ Excluir", key=f"del_pet_{pet.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                if st.button("🗑️ Excluir", key=f"del_pet_{pet.id}", width='stretch'):
                                     session.delete(pet)
                                     session.commit()
                                     st.success("Pet excluído com sucesso!")
@@ -1618,7 +1615,6 @@ else:
                     col1, col2 = st.columns(2)
                     
                     with col1:
-                        st.write(f"**CPF:** {usuario.cpf}")
                         st.write(f"**E-mail:** {usuario.email}")
                         st.write(f"**WhatsApp:** {usuario.whatsapp}")
                         st.write(f"**Data de cadastro:** {usuario.data_cadastro.strftime('%d/%m/%Y %H:%M')}")
@@ -1630,7 +1626,7 @@ else:
                     
                     # Toggle para status de admin
                     if st.button(f"{'🔴 Remover Admin' if usuario.is_admin else '🟢 Tornar Admin'}", 
-                                key=f"admin_toggle_{usuario.id}", use_container_width=True):  # CORREÇÃO: use_container_width
+                                key=f"admin_toggle_{usuario.id}", width='stretch'):
                         usuario.is_admin = not usuario.is_admin
                         session.commit()
                         st.success(f"Status de admin alterado para {usuario.login}")
