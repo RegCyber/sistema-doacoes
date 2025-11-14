@@ -17,6 +17,6 @@ jobs:
           if [ "$STATUS" -eq 200 ]; then
             echo "✅ O app está online."
           else
-            echo "⚠️ O app não respondeu corretamente! (Status $STATUS)"
-            # não dá exit 1, só avisa
+            echo "⚠️ O app respondeu com status $STATUS"
+            # não falha o job, apenas avisa
           fi
