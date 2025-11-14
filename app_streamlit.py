@@ -666,11 +666,21 @@ else:
             
             with col2:
                 whatsapp = st.text_input("WhatsApp*", 
-                                       value=doador_editando.whatsapp if doador_editando else "",
-                                       placeholder="(11) 99999-9999")
-                pode_entregar = st.selectbox("Pode entregar os itens?*", ["", "Sim", "Não"],
-                                           index=1 if doador_editando and doador_editando.pode_entregar else 0,
-                                           key="pode_entregar")
+                                    value=doador_editando.whatsapp if doador_editando else "",
+                                    placeholder="(11) 99999-9999")
+                
+                # CORREÇÃO: Definir índice correto baseado no valor booleano
+                if doador_editando:
+                    # Se está editando, usa o valor do banco
+                    index_pode_entregar = 1 if doador_editando.pode_entregar else 2
+                else:
+                    # Se é novo cadastro, começa vazio
+                    index_pode_entregar = 0
+                
+                pode_entregar = st.selectbox("Pode entregar os itens?*", 
+                                        ["", "Sim", "Não"],
+                                        index=index_pode_entregar,
+                                        key=f"pode_entregar_{doador_editando.id if doador_editando else 'new'}")
             
             st.subheader("Endereço")
             col1, col2 = st.columns(2)
@@ -1365,6 +1375,7 @@ else:
                             with col_edit:
                                 if st.button("✏️ Editar", key=f"edit_pet_{pet.id}", width='stretch'):
                                     st.session_state.edicao_ativa = f"pet_{pet.id}"
+                                    st.session_state.pagina_atual = "Pets Perdidos"
                                     st.rerun()
                             
                             with col_del:
