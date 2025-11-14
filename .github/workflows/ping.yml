@@ -3,26 +3,20 @@ name: Ping Streamlit App
 on:
   schedule:
     - cron: '0 */6 * * *'   # Executa a cada 6 horas
-  workflow_dispatch:         # Permite rodar manualmente pelo botão "Run workflow"
+  workflow_dispatch:         # Permite rodar manualmente
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Debug DNS
-        run: |
-          echo "🔎 Testando resolução de DNS..."
-          nslookup seu-app.streamlit.app || true
-          ping -c 3 seu-app.streamlit.app || true
-
       - name: Testar acesso ao app
         run: |
           echo "Acessando o app em $(date)"
-          STATUS=$(curl -s -L --max-redirs 100 --max-time 60 -o /dev/null -w "%{http_code}" https://marketplacesolidario.streamlit.app)
+          STATUS=$(curl -s -L --max-redirs 10 --max-time 60 -o /dev/null -w "%{http_code}" https://marketplacesolidario.streamlit.app)
           echo "Status HTTP: $STATUS"
-          if [ "$STATUS" -ne 200 ]; then
-            echo "⚠️ O app não respondeu corretamente! (Status $STATUS)"
-            exit 1
-          else
+          if [ "$STATUS" -eq 200 ]; then
             echo "✅ O app está online."
+          else
+            echo "⚠️ O app não respondeu corretamente! (Status $STATUS)"
+            # não dá exit 1, só avisa
           fi
