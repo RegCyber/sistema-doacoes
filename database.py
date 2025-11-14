@@ -1,138 +1,129 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Date, LargeBinary
+import os
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, Text, LargeBinary, Date, ForeignKey, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
-import os
+import hashlib
+import secrets
 
-# Configuração do banco de dados
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///doacoes.db")
+# SEMPRE usa SQLite - muito mais confiável no Streamlit Cloud
+DATABASE_URL = "sqlite:///doacoes.db"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+# MODELOS (exatamente iguais)
 class Usuario(Base):
-    __tablename__ = 'usuarios'
-    
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    login = Column(String(50), unique=True, nullable=False)
-    email = Column(String(100), nullable=False)
-    whatsapp = Column(String(20), nullable=False)
-    senha_hash = Column(String(255), nullable=False)
-    salt = Column(String(255), nullable=False)
-    cpf = Column(String(11), unique=True, nullable=False)
+    __tablename__ = "usuarios"
+    id = Column(Integer, primary_key=True, index=True)
+    login = Column(String(100), unique=True, index=True)
+    email = Column(String(200))
+    whatsapp = Column(String(20))
+    senha_hash = Column(String(128))
+    salt = Column(String(32))
+    cpf = Column(String(14), unique=True)
     is_admin = Column(Boolean, default=False)
-    data_cadastro = Column(DateTime, default=datetime.now)
+    data_cadastro = Column(DateTime, default=datetime.utcnow)
     
-    # Relacionamentos
-    doadores = relationship("Doador", back_populates="usuario")
-    receptores = relationship("Receptor", back_populates="usuario")
-    pets = relationship("Pet", back_populates="usuario")
+    doadores = relationship("Doador", back_populates="usuario", cascade="all, delete-orphan")
+    receptores = relationship("Receptor", back_populates="usuario", cascade="all, delete-orphan")
+    pets = relationship("Pet", back_populates="usuario", cascade="all, delete-orphan")
 
 class Doador(Base):
-    __tablename__ = 'doadores'
+    __tablename__ = "doadores"
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    cpf = Column(String(14), unique=True, index=True)
+    nome = Column(String(200))
+    endereco = Column(String(300))
+    numero = Column(String(20))
+    cep = Column(String(10))
+    bairro = Column(String(100))
+    cidade = Column(String(100))
+    estado = Column(String(2))
+    telefone = Column(String(20))
+    whatsapp = Column(String(20))
+    pode_entregar = Column(Boolean)
+    prazo_disponibilidade = Column(Date)
+    data_cadastro = Column(DateTime, default=datetime.utcnow)
     
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
-    cpf = Column(String(11), unique=True, nullable=False)
-    nome = Column(String(100), nullable=False)
-    endereco = Column(String(200), nullable=False)
-    numero = Column(String(10), nullable=False)
-    cep = Column(String(8), nullable=False)
-    bairro = Column(String(100), nullable=False)
-    cidade = Column(String(100), nullable=False)
-    estado = Column(String(2), nullable=False)
-    telefone = Column(String(20), nullable=False)
-    whatsapp = Column(String(20), nullable=False)
-    pode_entregar = Column(Boolean, default=False)
-    prazo_disponibilidade = Column(Date, nullable=False)
-    data_cadastro = Column(DateTime, default=datetime.now)
-    
-    # Relacionamentos
     usuario = relationship("Usuario", back_populates="doadores")
-    itens = relationship("ItemDoacao", back_populates="doador")
+    itens = relationship("ItemDoacao", back_populates="doador", cascade="all, delete-orphan")
+
+class ItemDoacao(Base):
+    __tablename__ = "itens_doacao"
+    id = Column(Integer, primary_key=True, index=True)
+    doador_id = Column(Integer, ForeignKey("doadores.id"))
+    item = Column(String(200))
+    quantidade = Column(Integer)
+    descricao = Column(Text)
+    foto = Column(LargeBinary)
+    data_cadastro = Column(DateTime, default=datetime.utcnow)
+    
+    doador = relationship("Doador", back_populates="itens")
 
 class Receptor(Base):
-    __tablename__ = 'receptores'
+    __tablename__ = "receptores"
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    cpf = Column(String(14), unique=True, index=True)
+    nome = Column(String(200))
+    endereco = Column(String(300))
+    numero = Column(String(20))
+    cep = Column(String(10))
+    bairro = Column(String(100))
+    cidade = Column(String(100))
+    estado = Column(String(2))
+    telefone = Column(String(20))
+    whatsapp = Column(String(20))
+    qtde_pessoas = Column(Integer)
+    pode_retirar = Column(Boolean)
+    data_cadastro = Column(DateTime, default=datetime.utcnow)
     
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
-    cpf = Column(String(11), unique=True, nullable=False)
-    nome = Column(String(100), nullable=False)
-    endereco = Column(String(200), nullable=False)
-    numero = Column(String(10), nullable=False)
-    cep = Column(String(8), nullable=False)
-    bairro = Column(String(100), nullable=False)
-    cidade = Column(String(100), nullable=False)
-    estado = Column(String(2), nullable=False)
-    telefone = Column(String(20), nullable=False)
-    whatsapp = Column(String(20), nullable=False)
-    qtde_pessoas = Column(Integer, nullable=False)
-    pode_retirar = Column(Boolean, default=False)
-    data_cadastro = Column(DateTime, default=datetime.now)
-    
-    # Relacionamentos
     usuario = relationship("Usuario", back_populates="receptores")
 
 class Pet(Base):
-    __tablename__ = 'pets'
-    
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
+    __tablename__ = "pets"
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     nome = Column(String(100), nullable=True)
-    especie = Column(String(50), nullable=False)
-    raca = Column(String(50), nullable=True)
-    descricao = Column(Text, nullable=False)
-    situacao = Column(String(50), nullable=False)
-    local_encontro = Column(String(200), nullable=False)
-    contato = Column(String(20), nullable=False)
-    foto = Column(LargeBinary, nullable=True)  # NOVO: campo para foto do pet
-    data_cadastro = Column(DateTime, default=datetime.now)
+    especie = Column(String(50))
+    raca = Column(String(100), nullable=True)
+    descricao = Column(Text)
+    situacao = Column(String(50))
+    local_encontro = Column(String(200))
+    contato = Column(String(20))
+    foto = Column(LargeBinary, nullable=True)
+    data_cadastro = Column(DateTime, default=datetime.utcnow)
     
-    # Relacionamentos
     usuario = relationship("Usuario", back_populates="pets")
 
-class ItemDoacao(Base):
-    __tablename__ = 'itens_doacao'
-    
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    doador_id = Column(Integer, ForeignKey('doadores.id'))
-    item = Column(String(100), nullable=False)
-    quantidade = Column(Integer, nullable=False)
-    descricao = Column(Text, nullable=True)
-    foto = Column(LargeBinary, nullable=True)  # NOVO: campo para foto do item
-    data_cadastro = Column(DateTime, default=datetime.now)
-    
-    # Relacionamentos
-    doador = relationship("Doador", back_populates="itens")
-
-# Funções de utilidade para senha
+# Funções de autenticação
 def gerar_salt():
-    return os.urandom(16).hex()
+    return secrets.token_hex(16)
 
 def hash_senha(senha, salt):
-    import hashlib
     return hashlib.pbkdf2_hmac('sha256', senha.encode('utf-8'), salt.encode('utf-8'), 100000).hex()
 
 def verificar_senha(senha, salt, senha_hash):
     return hash_senha(senha, salt) == senha_hash
 
-# Função para obter sessão do banco
 def get_session():
     return SessionLocal()
 
-# Criar as tabelas
-Base.metadata.create_all(bind=engine)
+# Cria tabelas se não existirem
+def criar_tabelas():
+    Base.metadata.create_all(bind=engine)
 
-# Função para criar usuário administrador padrão
-def criar_admin_padrao():
+# Cria admin se não existir
+def criar_admin():
     session = get_session()
     try:
-        # Verificar se já existe um admin
-        admin_existente = session.query(Usuario).filter(Usuario.cpf == "00000000001").first()
-        if not admin_existente:
+        admin = session.query(Usuario).filter(Usuario.login == 'admin').first()
+        if not admin:
             salt = gerar_salt()
-            senha_hash = hash_senha("admin123", salt)
+            senha_hash = hash_senha("012admin123", salt)
             
             admin = Usuario(
                 login="admin",
@@ -145,14 +136,13 @@ def criar_admin_padrao():
             )
             session.add(admin)
             session.commit()
-            print("Usuário administrador padrão criado com sucesso!")
-        else:
-            print("Usuário administrador já existe.")
+            print("✅ Admin criado!")
     except Exception as e:
-        session.rollback()
-        print(f"Erro ao criar admin padrão: {e}")
+        print(f"❌ Erro ao criar admin: {e}")
     finally:
         session.close()
 
-# Criar admin padrão ao importar o módulo
-criar_admin_padrao()
+# Inicialização
+criar_tabelas()
+criar_admin()
+print("🚀 Sistema pronto - usando SQLite local")
