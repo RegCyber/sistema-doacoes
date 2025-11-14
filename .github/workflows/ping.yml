@@ -9,6 +9,12 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug DNS
+        run: |
+          echo "🔎 Testando resolução de DNS..."
+          nslookup seu-app.streamlit.app || true
+          ping -c 3 seu-app.streamlit.app || true
+
       - name: Testar acesso ao app
         run: |
           echo "Acessando o app em $(date)"
