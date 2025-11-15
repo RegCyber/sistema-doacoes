@@ -12,11 +12,10 @@ jobs:
       - name: Testar acesso ao app
         run: |
           echo "Acessando o app em $(date)"
-          STATUS=$(curl -s -L --max-redirs 10 --max-time 60 -o /dev/null -w "%{http_code}" https://marketplacesolidario.streamlit.app)
+          STATUS=$(curl -s -L --max-redirs 10 --max-time 60 -o /dev/null -w "%{http_code}" https://marketplacesolidario.streamlit.app/)
           echo "Status HTTP: $STATUS"
-          if [ "$STATUS" -eq 200 ]; then
-            echo "✅ O app está online."
+          if [ "$STATUS" -eq 200 ] || [ "$STATUS" -eq 303 ]; then
+            echo "✅ O app está online (respondeu com $STATUS)."
           else
-            echo "⚠️ O app respondeu com status $STATUS"
-            # não falha o job, apenas avisa
+            echo "⚠️ O app não respondeu corretamente! (Status $STATUS)"
           fi
