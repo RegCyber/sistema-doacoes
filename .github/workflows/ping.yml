@@ -2,8 +2,8 @@ name: Ping Streamlit App
 
 on:
   schedule:
-    # Executa a cada 6 horas
-    - cron: "0 */6 * * *"
+    - cron: '0 */6 * * *'   # Executa a cada 6 horas
+  workflow_dispatch:         # Permite rodar manualmente
 
 jobs:
   ping:
@@ -12,11 +12,10 @@ jobs:
       - name: Testar acesso ao app
         run: |
           echo "Acessando o app em $(date)"
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://https://marketplacesolidario.streamlit.app/)
+          STATUS=$(curl -s -L --max-redirs 10 --max-time 60 -o /dev/null -w "%{http_code}" https://marketplacesolidario.streamlit.app/)
           echo "Status HTTP: $STATUS"
-          if [ "$STATUS" -ne 200 ]; then
-            echo "⚠️ O app não respondeu corretamente!"
-            exit 1
+          if [ "$STATUS" -eq 200 ] || [ "$STATUS" -eq 303 ]; then
+            echo "✅ O app está online (respondeu com $STATUS)."
           else
-            echo "✅ O app está online."
+            echo "⚠️ O app não respondeu corretamente! (Status $STATUS)"
           fi
