@@ -536,7 +536,7 @@ st.markdown("""
 
 # Página principal
 if not st.session_state.usuario_logado:
-    st.markdown('<h1 style="text-align: center; color: #B43D1F; font-size: 3rem; margin-bottom: 1rem;">Sistema de Doações para Impactados pelas Enchentes</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 style="text-align: center; color: #B43D1F; font-size: 2.7rem; margin-bottom: 1rem;">Sistema de Doações para Impactados pelas Enchentes</h1>', unsafe_allow_html=True)
    
     st.markdown("""
     <div style="text-align: center; font-size: 14px; color: #666; margin-bottom: 2rem;">
