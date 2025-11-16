@@ -534,9 +534,16 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
-# Páginas principais
+# Página principal
 if not st.session_state.usuario_logado:
-    st.title("Sistema de Doações para Impactados pelas Enchentes")
+    st.markdown('<h1 style="text-align: center; color: #B43D1F; font-size: 2.5rem; margin-bottom: 1rem;">Sistema de Doações para Impactados pelas Enchentes</h1>', unsafe_allow_html=True)
+   
+    st.markdown("""
+    <div style="text-align: center; font-size: 14px; color: #666; margin-bottom: 2rem;">
+        AMOJAP - Associação de Moradores e Amigos do Jardim Pantanal e Adjacências<br>
+        Rua Erva do Sereno, 608 Jd Maia - São Paulo - SP
+    </div>
+    """, unsafe_allow_html=True)
     
     # Imagem centralizada usando st.image
     try:
@@ -546,7 +553,7 @@ if not st.session_state.usuario_logado:
     except Exception as e:
         st.warning(f"Imagem 'Tela de Abertura.jpg' não encontrada. Erro: {e}")
     
-    st.info("Faça login na sidebar para acessar o sistema completo.")
+    # st.info("Faça login na sidebar para acessar o sistema completo.")
     
 else:
     # Sessão do banco
