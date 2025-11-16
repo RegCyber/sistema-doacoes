@@ -565,8 +565,8 @@ else:
             st.warning(f"Imagem 'Tela de Abertura.jpg' não encontrada. Erro: {e}")
         
         st.write("""
-        ##  AMOJAP - Associação de Moradores e Amigos do Jardim Pantanal e Adjacências
-        #   Rua Erva do Sereno, 608 Jd Maia - São Paulo - SP
+        ###  AMOJAP - Associação de Moradores e Amigos do Jardim Pantanal e Adjacências
+        ###   Rua Erva do Sereno, 608 Jd Maia - São Paulo - SP
         """)
         
         # Métricas
