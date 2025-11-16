@@ -536,7 +536,7 @@ st.markdown("""
 
 # Páginas principais
 if not st.session_state.usuario_logado:
-    st.title("Juntos Somos Mais FORTES!")
+    st.title("Sistema de Doações para Impactados pelas Enchentes")
     
     # Imagem centralizada usando st.image
     try:
@@ -554,7 +554,7 @@ else:
     
     # Página Inicial
     if st.session_state.pagina_atual == "Início":
-        st.markdown('<h1 class="main-header">Solidariedade em Tempos de Enchente</h1>', unsafe_allow_html=True)
+        st.markdown('<h1 class="main-header">Juntos Somos Mais FORTES!</h1>', unsafe_allow_html=True)
         
         # Imagem centralizada usando st.image
         try:
@@ -565,8 +565,8 @@ else:
             st.warning(f"Imagem 'Tela de Abertura.jpg' não encontrada. Erro: {e}")
         
         st.write("""
-        ###  AMOJAP - Associação de Moradores e Amigos do Jardim Pantanal e Adjacências
-        ###   Rua Erva do Sereno, 608 Jd Maia - São Paulo - SP
+        ####  AMOJAP - Associação de Moradores e Amigos do Jardim Pantanal e Adjacências
+        #####   Rua Erva do Sereno, 608 Jd Maia - São Paulo - SP
         """)
         
         # Métricas
