@@ -11,19 +11,41 @@ Sistema web para conectar doadores com pessoas afetadas por enchentes, desenvolv
 - ✅ **Pesquisa de doações** disponíveis
 - ✅ **Área administrativa** para gestão
 
-## 👤 Acesso
+🛠 Tecnologias Utilizadas no Sistema
 
-**Admin:**
+🌐 Frontend & Framework Principal
+      Streamlit - Framework web para aplicações de dados em Python
+      HTML5 - Estrutura semântica
+      CSS3 - Estilização e design responsivo
+      JavaScript - Interatividade e acessibilidade
 
-- Usuário: `admin`
-- Senha: `012admin123`
+🐍 Backend & Linguagem
+      Python 3.x - Linguagem principal do sistema
+      SQLAlchemy - ORM (Mapeamento Objeto-Relacional)
+      PIL/Pillow - Processamento de imagens
 
-## 🛠️ Tecnologias
+💾 Banco de Dados
+      SQLite - Banco de dados relacional embutido
 
-- **Frontend:** Streamlit
-- **Backend:** Python + SQLAlchemy
-- **Banco:** SQLite (Streamlit Cloud)
-- **Autenticação:** Hash + Salt
+🔐 Segurança & Autenticação
+      Hash PBKDF2 - Criptografia de senhas
+      Salt Randomizado - Proteção contra rainbow tables
+      Sessões Seguras - Gerenciamento de estado do usuário
+
+📱 UI/UX & Design
+      CSS Customizado - Design visual personalizado
+      Google Fonts (Poppins) - Tipografia moderna
+      Ícones Emoji - Interface amigável
+      Design Responsivo - Adaptável a mobile/desktop
+
+🖼️ Manipulação de Mídia
+      PIL (Python Imaging Library) - Processamento de upload de imagens
+      Base64 - Codificação de imagens para armazenamento
+      BytesIO - Manipulação de arquivos em memória
+
+⚡ Infraestrutura & Deploy
+      Streamlit Cloud - Hospedagem e deployment
+      Git/GitHub - Controle de versão
 
 ## 📱 Acesso
 
