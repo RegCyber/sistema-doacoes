@@ -536,7 +536,7 @@ st.markdown("""
 
 # Páginas principais
 if not st.session_state.usuario_logado:
-    st.title("Doações para Impactados pelas Enchentes")
+    st.title("Juntos Somos Mais FORTES!")
     
     # Imagem centralizada usando st.image
     try:
@@ -565,10 +565,8 @@ else:
             st.warning(f"Imagem 'Tela de Abertura.jpg' não encontrada. Erro: {e}")
         
         st.write("""
-        ## Juntos somos mais fortes!
-        
-        Esta plataforma conecta pessoas que querem ajudar com quem precisa de ajuda durante enchentes. 
-        Sua solidariedade pode fazer a diferença!
+        ##  AMOJAP - Associação de Moradores e Amigos do Jardim Pantanal e Adjacências
+        #   Rua Erva do Sereno, 608 Jd Maia - São Paulo - SP
         """)
         
         # Métricas
