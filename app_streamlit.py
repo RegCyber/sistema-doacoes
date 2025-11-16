@@ -557,16 +557,17 @@ else:
         st.markdown('<h1 class="main-header">Juntos Somos Mais FORTES!</h1>', unsafe_allow_html=True)
         
         # Imagem centralizada usando st.image
-        try:
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                st.image("Tela de Abertura.jpg", use_container_width=True, caption="Marketplace Solidário - Conectando doadores a vítimas de enchentes")
-        except Exception as e:
-            st.warning(f"Imagem 'Tela de Abertura.jpg' não encontrada. Erro: {e}")
+        # try:
+        #     col1, col2, col3 = st.columns([1, 2, 1])
+        #     with col2:
+        #         st.image("Tela de Abertura.jpg", use_container_width=True, caption="Marketplace Solidário - Conectando doadores a vítimas de enchentes")
+        # except Exception as e:
+        #     st.warning(f"Imagem 'Tela de Abertura.jpg' não encontrada. Erro: {e}")
         
         st.write("""
         ####  AMOJAP - Associação de Moradores e Amigos do Jardim Pantanal e Adjacências
         #####   Rua Erva do Sereno, 608 Jd Maia - São Paulo - SP
+        ####
         """)
         
         # Métricas
